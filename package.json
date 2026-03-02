@@ -1,7 +1,7 @@
 {
   "name": "motion-saas-backend",
   "version": "1.0.0",
-  "description": "Backend for Motion SaaS - handles video generation pipeline",
+  "description": "Backend for Motion SaaS - handles video generation pipeline with ElevenLabs voice",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
