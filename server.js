@@ -124,9 +124,9 @@ app.post('/api/generate', async (req, res) => {
 
     console.log('[GENERATE] Final user:', { id: user.id, credits: user.credits });
 
-    // Check credits - FOR TESTING: auto-reset to 5 if 0
+    // FOR TESTING: Always ensure at least 1 credit
     if (user.credits < 1) {
-      console.log('[GENERATE] User has no credits, resetting to 5 for testing');
+      console.log('[GENERATE] Adding test credits');
       await supabase.from('users').update({ credits: 5 }).eq('id', user.id);
       user.credits = 5;
     }
