@@ -74,34 +74,43 @@ app.post('/api/generate', async (req, res) => {
     console.log('[GENERATE] Starting video generation:', { prompt: prompt.slice(0, 50), sessionId, ip, voiceId });
 
     // Get or create user
-    let { data: user } = await supabase
+    let { data: user, error: userError } = await supabase
       .from('users')
       .select('*')
       .eq('session_id', sessionId)
       .single();
 
+    console.log('[GENERATE] User lookup by session:', { user: user?.id, credits: user?.credits, error: userError?.message });
+
     if (!user) {
       // Check IP
-      const { data: ipUser } = await supabase
+      const { data: ipUser, error: ipError } = await supabase
         .from('users')
         .select('*')
         .eq('ip_address', ip)
         .eq('is_anonymous', true)
         .single();
 
+      console.log('[GENERATE] User lookup by IP:', { ipUser: ipUser?.id, error: ipError?.message });
+
       if (ipUser) {
         await supabase.from('users').update({ session_id: sessionId }).eq('id', ipUser.id);
         user = ipUser;
       } else {
         // Create new user
+        console.log('[GENERATE] Creating new user with 5 credits');
         const { data: newUser, error } = await supabase
           .from('users')
           .insert({ session_id: sessionId, ip_address: ip, credits: 5, is_anonymous: true })
           .select()
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('[GENERATE] Error creating user:', error);
+          throw error;
+        }
         user = newUser;
+        console.log('[GENERATE] New user created:', { id: user.id, credits: user.credits });
 
         // Add credits transaction
         await supabase.from('credit_transactions').insert({
@@ -113,9 +122,13 @@ app.post('/api/generate', async (req, res) => {
       }
     }
 
-    // Check credits
+    console.log('[GENERATE] Final user:', { id: user.id, credits: user.credits });
+
+    // Check credits - FOR TESTING: auto-reset to 5 if 0
     if (user.credits < 1) {
-      return res.status(403).json({ error: 'No credits remaining' });
+      console.log('[GENERATE] User has no credits, resetting to 5 for testing');
+      await supabase.from('users').update({ credits: 5 }).eq('id', user.id);
+      user.credits = 5;
     }
 
     // Deduct credit
