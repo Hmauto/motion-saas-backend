@@ -16,7 +16,7 @@ const supabase = createClient(
 );
 
 // ElevenLabs config
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || 'sk_a53288b5acae83fbe9fb3fea7410fa97cbecb82f62511e9e';
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 
 // Health check
@@ -359,5 +359,5 @@ async function generateVideoPipeline(videoId, prompt, voiceId) {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Motion SaaS Backend running on port ${PORT}`);
-  console.log(`ElevenLabs API: ${ELEVENLABS_API_KEY ? 'Configured' : 'NOT CONFIGURED'}`);
+  console.log(`ElevenLabs API: ${ELEVENLABS_API_KEY ? 'Configured (' + ELEVENLABS_API_KEY.slice(0, 10) + '...)' : 'NOT CONFIGURED'}`);
 });
